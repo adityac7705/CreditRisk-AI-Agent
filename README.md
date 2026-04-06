@@ -44,40 +44,62 @@ The system is divided into four distinct modules as per the 12-week roadmap:
 │   └── index.html                 # AI Agent Web Interface
 ├── requirements.txt      # Project dependencies
 └── .gitignore            # Excludes environment and local data
+```
 
-🚀 Installation & Setup
+---
+
+## 🚀 Installation & Setup
+
 1. Clone the Repository
-    git clone [https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git)
 
-    cd YOUR_REPO_NAME
+```text
+git clone [https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git)
+```
+
+```text
+cd YOUR_REPO_NAME
+```
 
 2. Set Up Environment
-    pip install -r requirements.txt
+
+```text
+pip install -r requirements.txt
+```
 
 3. Run the Agent
-Launch the FastAPI server:
-    python src/main.py
+   Launch the FastAPI server:
+
+```text
+python src/main.py
+```
+
 The server will start at http://127.0.0.1:8000. You can then open src/index.html in your browser to interact with the agent.
 
-📊 Evaluation Metrics
+---
+
+## 📊 Evaluation Metrics
+
 Algorithm: XGBoost (Gradient Boosting Decision Trees)
 
 Baseline Models: Logistic Regression, Random Forest
 
 Optimization: SMOTE for minority class oversampling
 
-Status Thresholds:-
+# Status Thresholds:-
+
     < 35% Risk: Automated Approval
 
     35% - 65% Risk: Manual Review Trigger
 
     > 65% Risk: Automated Rejection
 
-🛠️ Technology Stack
-    Layer - Tools
-    Language - Python 3.13
-    ML/AI - Scikit-Learn, XGBoost, Pandas
-    Backend - FastAPI, Uvicorn
-    Frontend - Tailwind CSS, JavaScript
-    Reporting - jsPDF-AutoTable
-```
+---
+
+## 🛠️ Technology Stack
+
+Layer - Tools
+Language - Python 3.13
+ML/AI - Scikit-Learn, XGBoost, Pandas
+Backend - FastAPI, Uvicorn
+Frontend - Tailwind CSS, JavaScript
+Reporting - jsPDF-AutoTable
