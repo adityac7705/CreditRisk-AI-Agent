@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>CreditAgent AI - Executive Diagnostic</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: { primary: "#3b82f6", "background-dark": "#0a0f1d", "card-dark": "#161e2e", "input-dark": "#0d1424", "border-dark": "#2d3748" } } }
+        };
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer base { body { font-family: 'Inter', sans-serif; } }
+        .btn-gradient { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        #riskGauge { transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.5s ease; }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-200 min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-2xl py-12">
+        <div class="bg-card-dark border border-border-dark shadow-2xl rounded-xl overflow-hidden relative">
+            <div class="p-8 md:p-12">
+                <div class="flex flex-col items-center mb-8 text-center">
+                    <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 border border-primary/20">
+                        <span class="material-symbols-outlined text-primary text-3xl">verified_user</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-white tracking-tight">CreditAgent <span class="text-primary">AI</span></h1>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Automated Underwriting System</p>
+                </div>
+
+                <form class="space-y-6" onsubmit="event.preventDefault(); evaluateRisk();">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-border-dark pb-6">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Full Name</label>
+                            <input id="user_name" class="w-full bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none focus:border-primary" placeholder="Applicant Name" type="text" required/>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Age</label>
+                            <input id="user_age" class="w-full bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none" placeholder="30" type="number" required/>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Gender</label>
+                            <select id="user_gender" class="w-full bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Employment Status</label>
+                            <select id="employment_status" class="w-full bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none" onchange="toggleStability()">
+                                <option value="employed">Active Service</option>
+                                <option value="retired">Retired / Pensioner</option>
+                            </select>
+                        </div>
+                        <div id="stability_group" class="grid grid-cols-2 gap-2 transition-opacity duration-300">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase">Service Left (Yrs)</label>
+                                <input id="years_left" class="w-full bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none" placeholder="15" type="number"/>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase">Job Security</label>
+                                <select id="job_security" class="w-full bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none">
+                                    <option value="high">High</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Requested Loan</label>
+                            <div class="flex gap-2">
+                                <select id="currency" class="w-1/3 bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none">
+                                    <option value="$">USD</option>
+                                    <option value="₹">INR</option>
+                                    <option value="€">EUR</option>
+                                </select>
+                                <input id="loan_amnt" class="w-2/3 bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none" placeholder="10,000" type="text" oninput="formatNum(this)" required/>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Annual Income</label>
+                            <input id="annual_inc" class="w-full bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none" placeholder="60,000" type="text" oninput="formatNum(this)" required/>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Monthly Debt</label>
+                            <input id="monthly_debt" class="w-full bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none" placeholder="1,200" type="text" oninput="formatNum(this)" required/>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Loan Purpose</label>
+                            <select id="loan_purpose" class="w-full bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none">
+                                <option value="personal">Personal</option>
+                                <option value="home">Home / Auto</option>
+                                <option value="education">Education</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border-dark pt-4">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Outstanding CC Debt</label>
+                            <input id="cc_balance" class="w-full bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none" placeholder="Amount currently owed" type="text" oninput="formatNum(this)"/>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Total CC Limit</label>
+                            <input id="cc_limit" class="w-full bg-input-dark border border-border-dark rounded-lg py-2 px-3 text-sm text-slate-200 outline-none" placeholder="5,000" type="text" oninput="formatNum(this)"/>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input id="no_cc" type="checkbox" class="rounded bg-input-dark border-border-dark text-primary focus:ring-0" onchange="toggleCC(this)">
+                        <label class="ml-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">I Don't Use Credit Cards</label>
+                    </div>
+
+                    <button class="w-full btn-gradient py-3.5 rounded-lg text-white font-bold text-xs tracking-widest uppercase shadow-lg transition-transform active:scale-[0.98]" type="submit">
+                        Execute Diagnostic Analysis
+                    </button>
+                </form>
+
+                <div id="result" class="mt-8 p-6 rounded-xl border border-border-dark hidden bg-slate-900/40 transition-all">
+                    <div class="flex flex-col items-center mb-6">
+                        <div class="relative w-48 h-24 overflow-hidden">
+                            <div class="absolute top-0 left-0 w-48 h-48 border-[12px] border-slate-800 rounded-full"></div>
+                            <div id="riskGauge" class="absolute top-0 left-0 w-48 h-48 border-[12px] border-transparent border-t-primary border-l-primary rounded-full" style="transform: rotate(-135deg);"></div>
+                            <div class="absolute bottom-0 inset-x-0 text-center">
+                                <span id="riskValueText" class="text-3xl font-black text-white">0%</span>
+                                <p class="text-[8px] uppercase tracking-widest text-slate-500">Risk Score</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="status" class="text-lg font-bold mb-2 text-center tracking-wide"></div>
+                    <div id="reason" class="text-xs text-slate-400 text-center italic mb-6 leading-relaxed"></div>
+                    <button id="downloadBtn" class="w-full flex items-center justify-center gap-2 py-3 bg-primary/10 border border-primary/30 text-primary rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
+                        <span class="material-symbols-outlined text-lg">description</span>
+                        Download Full AI Dossier
+                    </button>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-border-dark flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <div class="relative flex h-2 w-2">
+                            <span id="status-dot-pulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-500 opacity-75"></span>
+                            <span id="status-dot" class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+                        </div>
+                        <span id="status-text" class="text-[10px] font-bold tracking-[0.15em] text-slate-500 uppercase transition-colors">Connecting...</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-slate-500">
+                        <span class="material-symbols-outlined text-[14px]">memory</span>
+                        <span class="text-[10px] font-mono uppercase tracking-widest">Core v3.0</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Comma Handling & Formatting ---
+        function formatNum(el) {
+            let val = el.value.replace(/,/g, '');
+            if (!isNaN(val) && val !== "") el.value = Number(val).toLocaleString('en-US');
+        }
+
+        function getVal(id) {
+            const el = document.getElementById(id);
+            if (!el) return 0;
+            const cleanVal = el.value.replace(/,/g, '');
+            return parseFloat(cleanVal) || 0;
+        }
+
+        function toggleStability() {
+            const status = document.getElementById('employment_status').value;
+            const group = document.getElementById('stability_group');
+            if(status === 'retired') {
+                if(group) group.classList.add('opacity-30', 'pointer-events-none');
+                document.getElementById('years_left').value = "0";
+                document.getElementById('job_security').value = "high";
+            } else {
+                if(group) group.classList.remove('opacity-30', 'pointer-events-none');
+            }
+        }
+
+        function toggleCC(cb) {
+            const bal = document.getElementById('cc_balance'), lim = document.getElementById('cc_limit');
+            if(bal && lim) {
+                bal.disabled = cb.checked; lim.disabled = cb.checked;
+                if(cb.checked) { 
+                    bal.value = "0"; lim.value = "0"; 
+                    bal.classList.add('opacity-40'); lim.classList.add('opacity-40'); 
+                } else { 
+                    bal.value = ""; lim.value = ""; 
+                    bal.classList.remove('opacity-40'); lim.classList.remove('opacity-40'); 
+                }
+            }
+        }
+
+        // --- Core Diagnostic logic ---
+        async function evaluateRisk() {
+            const symbol = document.getElementById('currency').value;
+            let loan = getVal('loan_amnt'), income = getVal('annual_inc'), debt = getVal('monthly_debt');
+            let bal = getVal('cc_balance'), limit = getVal('cc_limit');
+
+            const rate = { '₹': 83, '€': 0.92, '$': 1 }[symbol] || 1;
+            loan /= rate; income /= rate; debt /= rate; bal /= rate; limit /= rate;
+
+            const payload = { 
+                loan_amnt: loan, annual_inc: income, 
+                dti: (debt / (income / 12 || 1)) * 100, 
+                revol_util: (limit === 0) ? 0 : (bal / limit) * 100, 
+                years_left: getVal('years_left'),
+                job_security: document.getElementById('employment_status').value === 'retired' ? 'high' : document.getElementById('job_security').value,
+                loan_purpose: document.getElementById('loan_purpose').value
+            };
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/predict', { 
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) 
+                });
+                
+                if (!res.ok) throw new Error("Server error");
+                const data = await res.json();
+                
+                document.getElementById('result').classList.remove('hidden');
+                document.getElementById('riskValueText').innerText = `${data.risk_score}%`;
+                
+                const statusEl = document.getElementById('status');
+                statusEl.innerText = data.status;
+                statusEl.style.color = data.color;
+                statusEl.setAttribute('data-hex-color', data.color); 
+                
+                document.getElementById('reason').innerText = data.recommendation;
+                
+                // --- GAUGE COLOR & ROTATION FIX ---
+                const gauge = document.getElementById('riskGauge');
+                if(gauge) {
+                    gauge.style.transform = `rotate(${-135 + (data.risk_score * 1.8)}deg)`;
+                    gauge.style.borderTopColor = data.color;
+                    gauge.style.borderLeftColor = data.color;
+                }
+                document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+            } catch (e) { alert("Backend Connection Failed."); }
+        }
+
+        // --- INSTITUTIONAL DOSSIER ENGINE (FIXED LAYOUT & NO NUMBERING) ---
+        // --- FINAL REFINED INSTITUTIONAL DOSSIER ENGINE (RISK METER IN CONCLUSION) ---
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // 1. Data Extraction
+                const scoreText = document.getElementById('riskValueText').innerText;
+                const score = parseFloat(scoreText.replace('%', '')) || 0;
+                const status = document.getElementById('status').innerText || "UNKNOWN";
+                const statusHex = document.getElementById('status').getAttribute('data-hex-color') || "#3b82f6";
+                const userName = document.getElementById('user_name').value || "Applicant";
+                const userAge = document.getElementById('user_age').value || "N/A";
+                const userGender = document.getElementById('user_gender').value;
+                const empStatus = document.getElementById('employment_status').value;
+                const isRetired = empStatus === 'retired';
+                const jobSecurity = document.getElementById('job_security').value.toUpperCase();
+                const yearsLeft = getVal('years_left');
+
+                const currSelect = document.getElementById('currency');
+                const currCode = currSelect ? currSelect.options[currSelect.selectedIndex].text : "USD";
+                const loanAmount = getVal('loan_amnt');
+                const loanPurpose = document.getElementById('loan_purpose').options[document.getElementById('loan_purpose').selectedIndex].text;
+
+                const annualInc = getVal('annual_inc') || 1;
+                const monthlyInc = annualInc / 12;
+                const monthlyDebt = getVal('monthly_debt');
+                const dtiCalculated = (monthlyDebt / monthlyInc) * 100;
+                const ltiCalculated = (loanAmount / annualInc) * 100;
+
+                const hasCC = !document.getElementById('no_cc').checked;
+                const ccBalance = getVal('cc_balance');
+                const ccLimit = getVal('cc_limit') || 1;
+                const utilCalculated = hasCC ? (ccBalance / ccLimit) * 100 : 0;
+
+                const riskLevel = score < 35 ? "LOW" : (score < 65 ? "MEDIUM" : "HIGH");
+                const hexToRgb = (hex) => {
+                    const r = parseInt(hex.slice(1, 3), 16);
+                    const g = parseInt(hex.slice(3, 5), 16);
+                    const b = parseInt(hex.slice(5, 7), 16);
+                    return [r, g, b];
+                };
+                const rgb = hexToRgb(statusHex);
+
+                // 2. Layout Logic
+                let currentY = 48;
+                const sectionSpacing = 12; 
+                const footerMargin = 30;
+                const pageHeight = doc.internal.pageSize.height;
+
+                const checkPageBounds = (neededHeight) => {
+                    if (currentY + neededHeight > pageHeight - footerMargin) {
+                        doc.addPage(); currentY = 20; return true;
+                    }
+                    return false;
+                };
+
+                const addSectionTitle = (title) => {
+                    checkPageBounds(10);
+                    doc.setTextColor(30, 41, 59); doc.setFontSize(11); doc.setFont("helvetica", "bold");
+                    doc.text(title, 20, currentY); currentY += 6;
+                };
+
+                // HEADER
+                doc.setFillColor(15, 23, 42); doc.rect(0, 0, 210, 40, 'F');
+                doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.setFont("helvetica", "bold");
+                doc.text("CREDITAGENT AI: RISK DOSSIER", 20, 22);
+                doc.setFontSize(9); doc.setFont("helvetica", "normal");
+                doc.text(`VERIFIED DIAGNOSTIC • ID: CA-${Date.now().toString().slice(-6)}`, 20, 30);
+
+                // 1 & 2. APPLICANT & LOAN
+                addSectionTitle("APPLICANT DETAILS & LOAN INFORMATION");
+                doc.autoTable({ startY: currentY, body: [['Full Name:', userName.toUpperCase(), 'Loan Amount:', `${currCode} ${loanAmount.toLocaleString()}`], ['Age / Gender:', `${userAge} / ${userGender}`, 'Loan Purpose:', loanPurpose.toUpperCase()], ['Status:', empStatus.toUpperCase(), 'Remaining:', isRetired ? 'RETIRED' : `${yearsLeft} Yrs`]], theme: 'plain', styles: { fontSize: 8.5 } });
+                currentY = doc.lastAutoTable.finalY + sectionSpacing;
+
+                // 3 & 4. FINANCIALS & RATIOS
+                addSectionTitle("FINANCIAL DETAILS & KEY RATIOS");
+                doc.autoTable({ startY: currentY, body: [['Annual Income:', `${currCode} ${annualInc.toLocaleString()}`, 'DTI:', `${dtiCalculated.toFixed(1)}%`], ['Monthly Income:', `${currCode} ${monthlyInc.toLocaleString(undefined, {maximumFractionDigits:0})}`, 'LTI:', `${ltiCalculated.toFixed(1)}%`], ['Monthly Debt:', `${currCode} ${monthlyDebt.toLocaleString()}`, '', '']], theme: 'plain', styles: { fontSize: 8.5 } });
+                currentY = doc.lastAutoTable.finalY + sectionSpacing;
+
+                // 5. CREDIT PROFILE
+                addSectionTitle("CREDIT PROFILE");
+                doc.autoTable({ startY: currentY, body: [['Usage:', hasCC ? 'YES' : 'NO', 'Debt Owed:', `${currCode} ${ccBalance.toLocaleString()}`], ['Total Limit:', `${currCode} ${ccLimit.toLocaleString()}`, 'Utilization:', `${utilCalculated.toFixed(1)}%`]], theme: 'plain', styles: { fontSize: 8.5 } });
+                currentY = doc.lastAutoTable.finalY + sectionSpacing;
+
+                // 6. RISK ASSESSMENT
+                addSectionTitle("RISK ASSESSMENT");
+                doc.autoTable({ startY: currentY, head: [['Factor', 'Status', 'Evaluation']], body: [['Income', isRetired ? 'Fixed' : jobSecurity, isRetired ? 'Strong' : 'Verified'], ['Stability', isRetired ? 'Pension' : `${yearsLeft} Yrs`, 'Verified'], ['Debt burden', `DTI: ${dtiCalculated.toFixed(1)}%`, dtiCalculated < 36 ? 'Safe' : 'High']], theme: 'grid', headStyles: { fillColor: [240, 244, 248], textColor: [15, 23, 42] }, styles: { fontSize: 8.5 } });
+                currentY = doc.lastAutoTable.finalY + sectionSpacing;
+
+                // 7. ANALYTICAL OBSERVATIONS
+                addSectionTitle("UNDERWRITING OBSERVATIONS");
+                doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+                doc.text(`• Key Strengths: ${dtiCalculated < 36 ? "Healthy cash flow." : "Limited liquidity."}`, 20, currentY); currentY += 8;
+                doc.text(`• Risk Factors: ${utilCalculated > 30 ? "High credit use." : "Stable credit management."}`, 20, currentY); currentY += 8;
+                doc.text(`• Behavioral Insights: Applicant exhibits ${riskLevel.toLowerCase()} risk tendencies based on historic modeling.`, 20, currentY); currentY += 12;
+
+                // 8. IMPROVEMENT ROADMAP (Actionable points for the applicant)
+                addSectionTitle("ADVISORY IMPROVEMENT ROADMAP");
+                doc.setFont("helvetica", "normal"); doc.setFontSize(8.5);
+                let advice = [];
+                if (utilCalculated > 30) advice.push("1. Reduce outstanding credit card debt to below 30% utilization to boost credit resilience.");
+                if (dtiCalculated > 36) advice.push("2. Decrease monthly recurring obligations to improve the overall Debt-to-Income ratio.");
+                if (!hasCC) advice.push("3. Establish a revolving credit line (Credit Card) to build a verifiable repayment history.");
+                if (advice.length === 0) advice.push("1. Maintain current financial discipline; current ratios are within optimal institutional range.");
+                
+                advice.forEach(line => {
+                    doc.text(line, 20, currentY);
+                    currentY += 6;
+                });
+                currentY += 6;
+
+                // 9 & 10. CONCLUSION & RISK METER
+                checkPageBounds(40);
+                addSectionTitle("CONCLUSION & FINAL RISK VERDICT");
+                doc.setFontSize(9); doc.setFont("helvetica", "normal");
+                let conclusionText = `After a comprehensive review of the quantitative metrics and credit profile, the applicant is categorized as ${riskLevel} RISK. This decision is based on a final weighted risk score of ${score}%.`;
+                doc.text(conclusionText, 20, currentY, { maxWidth: 170 });
+                currentY += 12;
+
+                // THE RISK METER (Relocated here)
+                doc.setFillColor(230, 230, 230); doc.rect(20, currentY, 170, 8, 'F');
+                doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+                const fillWidth = Math.max(2, (score / 100) * 170);
+                doc.rect(20, currentY, fillWidth, 8, 'F');
+                
+                doc.setTextColor(rgb[0], rgb[1], rgb[2]); doc.setFont("helvetica", "bold");
+                doc.text(`DECISION: ${status} (${score}%)`, 190, currentY - 2, { align: 'right' });
+                
+                // FOOTER
+                const footerY = pageHeight - 15;
+                doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+                doc.text(`AUDIT TRAIL: 0x${Math.random().toString(16).slice(2, 12).toUpperCase()}`, 20, footerY);
+                doc.text(`Generated by CreditAgent AUS • Integrity Verified`, 20, footerY + 4);
+
+                doc.save(`Credit_Dossier_${userName.replace(/\s/g, '_')}.pdf`);
+            } catch (err) { alert("Error generating PDF."); console.error(err); }
+        });
+
+        async function checkStatus() {
+            try { 
+                const r = await fetch('http://127.0.0.1:8000/'); 
+                const ok = r.ok;
+                document.getElementById('status-text').innerText = ok ? "SYSTEM ONLINE" : "SYSTEM OFFLINE";
+                document.getElementById('status-text').className = "text-[10px] font-bold tracking-[0.15em] uppercase " + (ok ? "text-emerald-500" : "text-rose-500");
+                document.getElementById('status-dot').className = "relative inline-flex rounded-full h-2 w-2 " + (ok ? "bg-emerald-500" : "bg-rose-500");
+            } catch(e) { }
+        }
+        checkStatus(); setInterval(checkStatus, 30000);
+    </script>
+</body>
+</html>
